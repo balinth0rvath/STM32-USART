@@ -8,7 +8,10 @@
 #include "transmitter.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 #include "nrf24.h"
+
+SemaphoreHandle_t sem_nRF24 = NULL;
 
 typedef enum {
   nRF24_TX_ERROR = 0,
@@ -21,6 +24,13 @@ static nRF24_TX_Result nRF24_TransmitPacket(uint8_t* payload, uint8_t payload_le
 
 void transmitter_task()
 {
+  sem_nRF24 = xSemaphoreCreateBinary();
+
+  if (sem_nRF24 == NULL)
+    while (1);
+
+  nRF24_SetDevice1();
+
   nRF24_SetRFChannel(40);
   nRF24_SetDataRate(nRF24_DR_2Mbps);
   nRF24_SetCRCScheme(nRF24_CRC_2byte);
@@ -36,6 +46,8 @@ void transmitter_task()
   nRF24_SetPowerMode(nRF24_PWR_UP);
   nRF24_SetOperationalMode(nRF24_MODE_TX);
 
+  xSemaphoreGive(sem_nRF24);
+
   uint8_t payload[10] = {1,2,3,4,5,6,7,8,9,10};
   uint8_t payload_length = 10;
   uint8_t otx;
@@ -45,8 +57,15 @@ void transmitter_task()
 
   while(1)
   {
+    xSemaphoreTake(sem_nRF24, portMAX_DELAY);
+
+    nRF24_SetDevice1();
+
     ret = nRF24_TransmitPacket(payload, payload_length);
     otx = nRF24_GetRetransmitCounters();
+
+    xSemaphoreGive(sem_nRF24);
+
     otx_plot = (otx & nRF24_MASK_PLOS_CNT) >> 4;
     otx_arc = otx & nRF24_MASK_ARC_CNT;
     vTaskDelay(500);

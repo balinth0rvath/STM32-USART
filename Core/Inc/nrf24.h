@@ -249,17 +249,29 @@ nRF24_RXResult nRF24_ReadPayloadDpl(uint8_t *pBuf, uint8_t *length);
 
 // TODO
 // SPI2
-#define NRF_CE_GPIO_Port GPIOB
-#define NRF_CE_Pin GPIO_PIN_4
-#define NRF_CSN_GPIO_Port GPIOB
-#define NRF_CSN_Pin GPIO_PIN_5
+//#define NRF_CE_GPIO_Port GPIOB
+//#define NRF_CE_Pin GPIO_PIN_4
+//#define NRF_CSN_GPIO_Port GPIOB
+//#define NRF_CSN_Pin GPIO_PIN_5
 
 // SPI1
-//#define NRF_CE_GPIO_Port GPIOC
-//#define NRF_CE_Pin GPIO_PIN_1
-//#define NRF_CSN_GPIO_Port GPIOC
-//#define NRF_CSN_Pin GPIO_PIN_0
+// #define NRF_CE_GPIO_Port GPIOC
+// #define NRF_CE_Pin GPIO_PIN_1
+// #define NRF_CSN_GPIO_Port GPIOC
+// #define NRF_CSN_Pin GPIO_PIN_0
 
+extern uint8_t device_num;
+extern GPIO_TypeDef* NRF_CE_GPIO_Port;
+extern uint16_t NRF_CE_Pin;
+
+extern GPIO_TypeDef* NRF_CSN_GPIO_Port;
+extern uint16_t NRF_CSN_Pin;
+
+extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
+
+void nRF24_SetDevice1();
+void nRF24_SetDevice2();
 
 static inline void nRF24_CE_L() {
     HAL_GPIO_WritePin(NRF_CE_GPIO_Port, NRF_CE_Pin, GPIO_PIN_RESET);
@@ -280,7 +292,14 @@ static inline void nRF24_CSN_H() {
 static inline uint8_t nRF24_LL_RW(uint8_t data) {
     // Wait until TX buffer is empty
     uint8_t result;
-    if(HAL_SPI_TransmitReceive(&hspi2,&data,&result,1,2000)!=HAL_OK) {
+    SPI_HandleTypeDef* hspi = NULL;
+
+    if (device_num == 1)
+      hspi = &hspi1;
+    else
+      hspi = &hspi2;
+
+    if(HAL_SPI_TransmitReceive(hspi,&data,&result,1,2000)!=HAL_OK) {
         Error_Handler();
     };
     return result;

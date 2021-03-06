@@ -9,12 +9,24 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "nrf24.h"
+#include "semphr.h"
 
 static uint8_t payload[10] = {};
 static uint8_t payload_length = 10;
 
+extern SemaphoreHandle_t sem_nRF24;
+
 void receiver_task()
 {
+  while(sem_nRF24 == NULL)
+  {
+    vTaskDelay(100);
+  }
+
+  xSemaphoreTake(sem_nRF24, portMAX_DELAY);
+
+  nRF24_SetDevice2();
+
   nRF24_SetRFChannel(40);
   nRF24_SetDataRate(nRF24_DR_2Mbps);
   nRF24_SetCRCScheme(nRF24_CRC_2byte);
@@ -28,15 +40,22 @@ void receiver_task()
   nRF24_SetPowerMode(nRF24_PWR_UP);
   nRF24_CE_H();
 
+  xSemaphoreGive(sem_nRF24);
+
   nRF24_RXResult pipe;
 
   while(1)
   {
+    xSemaphoreTake(sem_nRF24, portMAX_DELAY);
+
+    nRF24_SetDevice2();
+
     if (nRF24_GetStatus_RXFIFO() != nRF24_STATUS_RXFIFO_EMPTY)
     {
       pipe = nRF24_ReadPayload(payload, &payload_length);
       nRF24_ClearIRQFlags();
     }
+    xSemaphoreGive(sem_nRF24);
 
     vTaskDelay(450);
   }
