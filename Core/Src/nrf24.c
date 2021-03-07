@@ -538,6 +538,16 @@ void nRF24_WriteAckPayload(nRF24_RXResult pipe, char *payload, uint8_t length) {
 
 }
 
+void nRF24_GetRegisters(nrf24_register_t* preg)
+{
+  while(preg)
+  {
+    preg->reg_value = nRF24_ReadReg(preg->reg_num);
+    preg = preg->next;
+  }
+}
+
+
 /*
 
 // Print nRF24L01+ current configuration (for debug purposes)

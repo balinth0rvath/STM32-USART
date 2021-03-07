@@ -35,6 +35,9 @@ void receiver_task()
   nRF24_SetDevice2();
 
   nRF24_CE_L();
+
+  show_registers();
+
   nRF24_Init();
 
   //nRF24_DisableAA(0xFF);
@@ -78,6 +81,6 @@ void receiver_task()
 
     xSemaphoreGive(sem_nRF24);
 
-    vTaskDelay(500);
+    vTaskDelay(5000);
   }
 }

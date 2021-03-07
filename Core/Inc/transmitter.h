@@ -9,5 +9,6 @@
 #define INC_TRANSMITTER_H_
 
 void transmitter_task();
+void show_registers();
 
 #endif /* INC_TRANSMITTER_H_ */

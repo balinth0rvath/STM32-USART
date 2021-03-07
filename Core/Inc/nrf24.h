@@ -273,6 +273,15 @@ extern SPI_HandleTypeDef hspi2;
 void nRF24_SetDevice1();
 void nRF24_SetDevice2();
 
+typedef struct nrf24_registers {
+  uint8_t reg_num;
+  char reg_name[12];
+  uint8_t reg_value;
+  struct nrf24_register_t* next;
+} nrf24_register_t;
+
+void nRF24_GetRegisters(nrf24_register_t* register_list);
+
 static inline void nRF24_CE_L() {
     HAL_GPIO_WritePin(NRF_CE_GPIO_Port, NRF_CE_Pin, GPIO_PIN_RESET);
 }

@@ -11,6 +11,7 @@
 #include "semphr.h"
 #include "nrf24.h"
 #include "stdio.h"
+#include "string.h"
 
 SemaphoreHandle_t sem_nRF24 = NULL;
 static char message[64] = "";
@@ -25,6 +26,70 @@ typedef enum {
 
 static nRF24_TX_Result nRF24_TransmitPacket(uint8_t* payload, uint8_t payload_length);
 
+#define REG_COUNT 23
+
+void show_registers()
+{
+  const char* reg_list[REG_COUNT] = {
+      "CONFIG     ",
+      "EN_AA      ",
+      "EN_RXADDR  ",
+      "SETUP_AW   ",
+      "SETUP_RETR ",
+      "RF_CH      ",
+      "RF_SETUP   ",
+      "STATUS     ",
+      "OBSERVE_TX ",
+      "CD         ",
+      "RX_ADDR_P0 ",
+      "RX_ADDR_P1 ",
+      "RX_ADDR_P2 ",
+      "RX_ADDR_P3 ",
+      "RX_ADDR_P4 ",
+      "RX_ADDR_P5 ",
+      "TX_ADDR    ",
+      "RX_PW_P0   ",
+      "RX_PW_P1   ",
+      "RX_PW_P2   ",
+      "RX_PW_P3   ",
+      "RX_PW_P4   ",
+      "RX_PW_P5   ",
+      "FIF0_STATUS"
+  };
+
+
+  nrf24_register_t* preg = pvPortMalloc(REG_COUNT * sizeof(nrf24_register_t));
+  nrf24_register_t* iter_preg = preg;
+
+  for(int i=0;i<REG_COUNT;i++)
+  {
+    iter_preg->reg_num = i;
+    if (i==REG_COUNT - 1)
+      iter_preg->next = NULL;
+    else
+      iter_preg->next = iter_preg + 1;
+    memcpy(iter_preg->reg_name, reg_list[i],11);
+    iter_preg++;
+  }
+
+  nRF24_GetRegisters(preg);
+
+  iter_preg = preg;
+  while (iter_preg) {
+    memset(message,0, 64);
+    sprintf(message, "%02x %s %02x \n\r", iter_preg->reg_num, iter_preg->reg_name, iter_preg->reg_value);
+    //sprintf(message, "%02x %s %02x \n\r", 1, "NAME", 1);
+    //sprintf(message, "ABC %02X \n\r", 1);
+    vTaskDelay(5);
+    HAL_UART_Transmit(&huart2, (uint8_t*) message, 23, 100);
+    vTaskDelay(5);
+    iter_preg = iter_preg->next;
+  }
+
+  vPortFree(preg);
+
+}
+
 void transmitter_task()
 {
   vTaskDelay(200);
@@ -34,15 +99,14 @@ void transmitter_task()
 
   xSemaphoreTake(sem_nRF24, portMAX_DELAY);
 
-  sprintf(message,"Transmitter: initializing... \n\r");
-  HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
 
   nRF24_SetDevice1();
 
   nRF24_CE_L();
-  nRF24_Init();
 
-  //nRF24_DisableAA(0xFF);
+  show_registers();
+
+  nRF24_Init();
 
   nRF24_SetRFChannel(42);
   nRF24_SetDataRate(nRF24_DR_1Mbps);
@@ -61,6 +125,8 @@ void transmitter_task()
   sprintf(message,"Transmitter: initialized \n\r");
   HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
 
+
+
   xSemaphoreGive(sem_nRF24);
 
   vTaskDelay(100);
@@ -78,8 +144,8 @@ void transmitter_task()
 
     nRF24_SetDevice1();
 
-    //sprintf(message,"Transmitter: sending packet... \n\r");
-    //HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
+    sprintf(message,"Transmitter: sending packet... \n\r");
+    HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
 
     ret = nRF24_TransmitPacket(payload, payload_length);
     otx = nRF24_GetRetransmitCounters();
@@ -87,9 +153,10 @@ void transmitter_task()
     otx_plot = (otx & nRF24_MASK_PLOS_CNT) >> 4;
     otx_arc = otx & nRF24_MASK_ARC_CNT;
 
-    //sprintf(message,"Transmitter: packet loss: %d auto retransmit count: %d \n\r", otx_plot, otx_arc);
-    //HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
-    memset(message, 0, 64);
+    sprintf(message,"Transmitter: packet loss: %d auto retransmit count: %d \n\r", otx_plot, otx_arc);
+    HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
+
+    memset(message, 32, 64);
     switch(ret)
     {
     case nRF24_TX_ERROR:
@@ -105,8 +172,8 @@ void transmitter_task()
       HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
       break;
     case nRF24_TX_MAXRT:
-      //sprintf(message,"Transmitter: transmit error MAXRT \n\r");
-      //HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
+      sprintf(message,"Transmitter: transmit error MAXRT \n\r");
+      HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
       break;
     default:
       break;
@@ -114,7 +181,7 @@ void transmitter_task()
 
     xSemaphoreGive(sem_nRF24);
 
-    vTaskDelay(500);
+    vTaskDelay(5000);
   }
 }
 
