@@ -13,19 +13,20 @@ uint16_t NRF_CSN_Pin = 0;
 void nRF24_SetDevice1()
 {
   device_num = 1;
-  NRF_CE_GPIO_Port = GPIOC;
-  NRF_CE_Pin = GPIO_PIN_1;
-  NRF_CSN_GPIO_Port = GPIOC;
-  NRF_CSN_Pin = GPIO_PIN_0;
+  NRF_CE_GPIO_Port = GPIOB;
+  NRF_CE_Pin = GPIO_PIN_4;
+  NRF_CSN_GPIO_Port = GPIOB;
+  NRF_CSN_Pin = GPIO_PIN_5;
+
 }
 
 void nRF24_SetDevice2()
 {
   device_num = 2;
-  NRF_CE_GPIO_Port = GPIOB;
-  NRF_CE_Pin = GPIO_PIN_4;
-  NRF_CSN_GPIO_Port = GPIOB;
-  NRF_CSN_Pin = GPIO_PIN_5;
+  NRF_CE_GPIO_Port = GPIOC;
+  NRF_CE_Pin = GPIO_PIN_1;
+  NRF_CSN_GPIO_Port = GPIOC;
+  NRF_CSN_Pin = GPIO_PIN_0;
 
 }
 

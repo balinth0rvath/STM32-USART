@@ -36,8 +36,6 @@ void receiver_task()
 
   nRF24_CE_L();
 
-  show_registers();
-
   nRF24_Init();
 
   //nRF24_DisableAA(0xFF);
@@ -55,6 +53,8 @@ void receiver_task()
   nRF24_ClearIRQFlags();
   nRF24_SetPowerMode(nRF24_PWR_UP);
   nRF24_CE_H();
+
+  show_registers();
 
   sprintf(message,"Receiver: initialized \n\r");
   HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
