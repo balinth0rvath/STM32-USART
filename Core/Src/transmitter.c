@@ -92,15 +92,18 @@ void show_registers()
 
 void transmitter_task()
 {
+
   vTaskDelay(200);
+
+  sem_nRF24 = xSemaphoreCreateBinary();
 
   if (sem_nRF24 == NULL)
     while (1);
 
-  xSemaphoreTake(sem_nRF24, portMAX_DELAY);
+  //xSemaphoreTake(sem_nRF24, portMAX_DELAY);
 
 
-  nRF24_SetDevice1();
+  nRF24_SetDeviceBitbang();
 
   nRF24_CE_L();
 
@@ -124,8 +127,6 @@ void transmitter_task()
 
   sprintf(message,"Transmitter: initialized \n\r");
   HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
-
-
 
   xSemaphoreGive(sem_nRF24);
 

@@ -9,6 +9,14 @@ GPIO_TypeDef* NRF_CE_GPIO_Port = NULL;
 uint16_t NRF_CE_Pin = 0;
 GPIO_TypeDef* NRF_CSN_GPIO_Port = NULL;
 uint16_t NRF_CSN_Pin = 0;
+GPIO_TypeDef* NRF_SCLK_GPIO_Port = NULL;
+uint16_t NRF_SCLK_Pin = 0;
+GPIO_TypeDef* NRF_MISO_GPIO_Port = NULL;
+uint16_t NRF_MISO_Pin = 0;
+GPIO_TypeDef* NRF_MOSI_GPIO_Port = NULL;
+uint16_t NRF_MOSI_Pin = 0;
+
+
 
 void nRF24_SetDevice1()
 {
@@ -27,6 +35,26 @@ void nRF24_SetDevice2()
   NRF_CE_Pin = GPIO_PIN_1;
   NRF_CSN_GPIO_Port = GPIOC;
   NRF_CSN_Pin = GPIO_PIN_0;
+
+}
+
+void nRF24_SetDeviceBitbang()
+{
+  device_num = 0;
+  NRF_CE_GPIO_Port = GPIOB;
+  NRF_CE_Pin = GPIO_PIN_4;
+
+  NRF_CSN_GPIO_Port = GPIOB;
+  NRF_CSN_Pin = GPIO_PIN_5;
+
+  NRF_SCLK_GPIO_Port = GPIOC;
+  NRF_SCLK_Pin = GPIO_PIN_0;
+
+  NRF_MISO_GPIO_Port = GPIOB;
+  NRF_MISO_Pin = GPIO_PIN_0;
+
+  NRF_MOSI_GPIO_Port = GPIOC;
+  NRF_MOSI_Pin = GPIO_PIN_1;
 
 }
 

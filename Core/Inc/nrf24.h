@@ -267,11 +267,22 @@ extern uint16_t NRF_CE_Pin;
 extern GPIO_TypeDef* NRF_CSN_GPIO_Port;
 extern uint16_t NRF_CSN_Pin;
 
+extern GPIO_TypeDef* NRF_SCLK_GPIO_Port;
+extern uint16_t NRF_SCLK_Pin;
+
+extern GPIO_TypeDef* NRF_MISO_GPIO_Port;
+extern uint16_t NRF_MISO_Pin;
+
+extern GPIO_TypeDef* NRF_MOSI_GPIO_Port;
+extern uint16_t NRF_MOSI_Pin;
+
+
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 
 void nRF24_SetDevice1();
 void nRF24_SetDevice2();
+void nRF24_SetDeviceBitbang();
 
 typedef struct nrf24_registers {
   uint8_t reg_num;
@@ -298,19 +309,61 @@ static inline void nRF24_CSN_H() {
     HAL_GPIO_WritePin(NRF_CSN_GPIO_Port, NRF_CSN_Pin, GPIO_PIN_SET);
 }
 
+static inline uint8_t Bitbang_SPI_TransmitReceive(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size,
+    uint32_t Timeout)
+{
+  int i=0;
+  uint8_t ret=0;
+  *pRxData = 0;
+
+
+  for(i=7;i>=0;i--)
+  {
+    if (*pTxData & (1 << i))
+    {
+      HAL_GPIO_WritePin(NRF_MOSI_GPIO_Port, NRF_MOSI_Pin, GPIO_PIN_SET);
+    } else
+    {
+      HAL_GPIO_WritePin(NRF_MOSI_GPIO_Port, NRF_MOSI_Pin, GPIO_PIN_RESET);
+    }
+
+    HAL_GPIO_WritePin(NRF_SCLK_GPIO_Port, NRF_SCLK_Pin, GPIO_PIN_RESET);
+    vTaskDelay(1);
+
+    *pRxData = *pRxData | (HAL_GPIO_ReadPin(NRF_MISO_GPIO_Port, NRF_MISO_Pin ) << i);
+    //gpio_set_value(NRF24_SCLK, 1);
+    HAL_GPIO_WritePin(NRF_SCLK_GPIO_Port, NRF_SCLK_Pin, GPIO_PIN_SET);
+    vTaskDelay(1);
+  }
+
+  //gpio_set_value(NRF24_CSN, 1);
+  //gpio_set_value(NRF24_SCLK, 0);
+  //gpio_set_value(NRF24_MOSI, 0);
+  return ret;
+
+}
+
 static inline uint8_t nRF24_LL_RW(uint8_t data) {
     // Wait until TX buffer is empty
     uint8_t result;
     SPI_HandleTypeDef* hspi = NULL;
 
-    if (device_num == 1)
-      hspi = &hspi1;
-    else
-      hspi = &hspi2;
+    if (device_num)
+    {
+      if (device_num == 1)
+        hspi = &hspi1;
+      else
+        hspi = &hspi2;
 
-    if(HAL_SPI_TransmitReceive(hspi,&data,&result,1,2000)!=HAL_OK) {
-        Error_Handler();
-    };
+      if(HAL_SPI_TransmitReceive(hspi,&data,&result,1,2000)!=HAL_OK) {
+          Error_Handler();
+      };
+    }
+    else
+    {
+      Bitbang_SPI_TransmitReceive(&data, &result, 0, 0);
+    }
+
     return result;
 }
 
