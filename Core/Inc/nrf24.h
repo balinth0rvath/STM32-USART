@@ -3,6 +3,9 @@
 #ifndef __NRF24_H
 #define __NRF24_H
 #include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
 
 extern SPI_HandleTypeDef hspi2;
 
@@ -309,10 +312,28 @@ static inline void nRF24_CSN_H() {
     HAL_GPIO_WritePin(NRF_CSN_GPIO_Port, NRF_CSN_Pin, GPIO_PIN_SET);
 }
 
+static inline void nRF24_SCLK_L() {
+    HAL_GPIO_WritePin(NRF_SCLK_GPIO_Port, NRF_SCLK_Pin, GPIO_PIN_RESET);
+}
+
+static inline void nRF24_SCLK_H() {
+    HAL_GPIO_WritePin(NRF_SCLK_GPIO_Port, NRF_SCLK_Pin, GPIO_PIN_SET);
+}
+
+static inline void nRF24_MOSI_L() {
+    HAL_GPIO_WritePin(NRF_MOSI_GPIO_Port, NRF_MOSI_Pin, GPIO_PIN_RESET);
+}
+
+static inline void nRF24_MOSI_H() {
+    HAL_GPIO_WritePin(NRF_MOSI_GPIO_Port, NRF_MOSI_Pin, GPIO_PIN_SET);
+}
+
+
 static inline uint8_t Bitbang_SPI_TransmitReceive(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size,
     uint32_t Timeout)
 {
   int i=0;
+
   uint8_t ret=0;
   *pRxData = 0;
 
@@ -321,24 +342,22 @@ static inline uint8_t Bitbang_SPI_TransmitReceive(uint8_t *pTxData, uint8_t *pRx
   {
     if (*pTxData & (1 << i))
     {
-      HAL_GPIO_WritePin(NRF_MOSI_GPIO_Port, NRF_MOSI_Pin, GPIO_PIN_SET);
+      nRF24_MOSI_H();
     } else
     {
-      HAL_GPIO_WritePin(NRF_MOSI_GPIO_Port, NRF_MOSI_Pin, GPIO_PIN_RESET);
+      nRF24_MOSI_L();
     }
 
-    HAL_GPIO_WritePin(NRF_SCLK_GPIO_Port, NRF_SCLK_Pin, GPIO_PIN_RESET);
+    nRF24_SCLK_L();
     vTaskDelay(1);
 
     *pRxData = *pRxData | (HAL_GPIO_ReadPin(NRF_MISO_GPIO_Port, NRF_MISO_Pin ) << i);
-    //gpio_set_value(NRF24_SCLK, 1);
-    HAL_GPIO_WritePin(NRF_SCLK_GPIO_Port, NRF_SCLK_Pin, GPIO_PIN_SET);
+    nRF24_SCLK_H();
+
     vTaskDelay(1);
   }
 
-  //gpio_set_value(NRF24_CSN, 1);
-  //gpio_set_value(NRF24_SCLK, 0);
-  //gpio_set_value(NRF24_MOSI, 0);
+  nRF24_SCLK_L();
   return ret;
 
 }

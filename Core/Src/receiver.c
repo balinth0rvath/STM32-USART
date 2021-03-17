@@ -63,7 +63,7 @@ void receiver_task()
 
   vTaskDelay(100);
 
-  nRF24_RXResult pipe;
+  //nRF24_RXResult pipe;
 
   while(1)
   {
@@ -73,7 +73,8 @@ void receiver_task()
 
     if (nRF24_GetStatus_RXFIFO() != nRF24_STATUS_RXFIFO_EMPTY)
     {
-      pipe = nRF24_ReadPayload(payload, &payload_length);
+      //pipe = nRF24_ReadPayload(payload, &payload_length);
+
       nRF24_ClearIRQFlags();
       sprintf(message,"Receiver: packet arrived... \n\r");
       HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);

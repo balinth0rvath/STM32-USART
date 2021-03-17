@@ -26,7 +26,7 @@ typedef enum {
 
 static nRF24_TX_Result nRF24_TransmitPacket(uint8_t* payload, uint8_t payload_length);
 
-#define REG_COUNT 23
+#define REG_COUNT 20
 
 void show_registers()
 {
@@ -50,11 +50,7 @@ void show_registers()
       "TX_ADDR    ",
       "RX_PW_P0   ",
       "RX_PW_P1   ",
-      "RX_PW_P2   ",
-      "RX_PW_P3   ",
-      "RX_PW_P4   ",
-      "RX_PW_P5   ",
-      "FIF0_STATUS"
+      "RX_PW_P2   "
   };
 
 
@@ -103,7 +99,8 @@ void transmitter_task()
   //xSemaphoreTake(sem_nRF24, portMAX_DELAY);
 
 
-  nRF24_SetDeviceBitbang();
+  //nRF24_SetDeviceBitbang();
+  nRF24_SetDevice1();
 
   nRF24_CE_L();
 
