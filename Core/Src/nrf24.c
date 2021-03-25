@@ -66,12 +66,8 @@ static uint8_t nRF24_ReadReg(uint8_t reg) {
 	uint8_t value;
 
 	nRF24_CSN_L();
-	//nRF24_SCLK_L();
-	//nRF24_MOSI_L();
-	vTaskDelay(1);
 	nRF24_LL_RW(reg & nRF24_MASK_REG_MAP);
 	value = nRF24_LL_RW(nRF24_CMD_NOP);
-
 
 	nRF24_CSN_H();
 

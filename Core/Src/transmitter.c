@@ -89,7 +89,7 @@ void show_registers()
 void transmitter_task()
 {
 
-  vTaskDelay(200);
+  vTaskDelay(1000);
 
   sem_nRF24 = xSemaphoreCreateBinary();
 
@@ -99,10 +99,16 @@ void transmitter_task()
   //xSemaphoreTake(sem_nRF24, portMAX_DELAY);
 
 
-  //nRF24_SetDeviceBitbang();
-  nRF24_SetDevice1();
+  nRF24_SetDeviceBitbang();
+  //nRF24_SetDevice2();
 
   nRF24_CE_L();
+
+  while(1)
+  {
+    nRF24_GetStatus();
+    vTaskDelay(1000);
+  }
 
   show_registers();
 

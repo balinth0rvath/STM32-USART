@@ -76,8 +76,8 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   //TaskHandle_t handle_logger = NULL;
-  TaskHandle_t handle_transmitter = NULL;
-  //TaskHandle_t handle_receiver = NULL;
+  //TaskHandle_t handle_transmitter = NULL;
+  TaskHandle_t handle_receiver = NULL;
   BaseType_t ret;
 
   /*
@@ -94,6 +94,7 @@ int main(void)
   }
   */
 
+  /*
   ret = xTaskCreate(transmitter_task,
                       "transmitter",
                       STACK_SIZE_APPLICATION,
@@ -105,8 +106,8 @@ int main(void)
   {
     while(1);
   }
+  */
 
-  /*
   ret = xTaskCreate(receiver_task,
                       "receiver",
                       STACK_SIZE_APPLICATION,
@@ -118,7 +119,7 @@ int main(void)
   {
     while(1);
   }
-  */
+
 
 
   /* USER CODE END 1 */
