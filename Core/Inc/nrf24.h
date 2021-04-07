@@ -349,12 +349,12 @@ static inline uint8_t Bitbang_SPI_TransmitReceive(uint8_t *pTxData, uint8_t *pRx
     }
 
     nRF24_SCLK_L();
-    vTaskDelay(500);
+    vTaskDelay(5);
 
     *pRxData = *pRxData | (HAL_GPIO_ReadPin(NRF_MISO_GPIO_Port, NRF_MISO_Pin ) << i);
     nRF24_SCLK_H();
 
-    vTaskDelay(500);
+    vTaskDelay(5);
   }
 
   nRF24_SCLK_L();
