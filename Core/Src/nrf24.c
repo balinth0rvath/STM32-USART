@@ -577,6 +577,15 @@ void nRF24_GetRegisters(nrf24_register_t* preg)
   }
 }
 
+uint8_t nRF24_GetCarrier(void)
+{
+  return nRF24_ReadReg(nRF24_REG_RPD);
+}
+
+void nRF24_ClearCarrier(void)
+{
+  nRF24_WriteReg(nRF24_REG_RPD, 0);
+}
 
 /*
 

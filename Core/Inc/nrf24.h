@@ -296,6 +296,9 @@ typedef struct nrf24_registers {
 
 void nRF24_GetRegisters(nrf24_register_t* register_list);
 
+uint8_t nRF24_GetCarrier(void);
+void nRF24_ClearCarrier(void);
+
 static inline void nRF24_CE_L() {
     HAL_GPIO_WritePin(NRF_CE_GPIO_Port, NRF_CE_Pin, GPIO_PIN_RESET);
 }

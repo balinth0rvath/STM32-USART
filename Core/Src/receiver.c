@@ -41,6 +41,7 @@ void receiver_task()
 
   nRF24_SetRFChannel(100);
   nRF24_SetAutoRetr(0xf, 0xf);
+  nRF24_SetRXPipe(nRF24_PIPE0, nRF24_AA_ON, 4);
   //nRF24_DisableAA(0xFF);
 
   /*
@@ -73,24 +74,27 @@ void receiver_task()
 
   //nRF24_RXResult pipe;
 
+
+
   while(1)
   {
     xSemaphoreTake(sem_nRF24, portMAX_DELAY);
 
     //nRF24_SetDevice1();
 
+
     if (nRF24_GetStatus_RXFIFO() != nRF24_STATUS_RXFIFO_EMPTY)
     {
       nRF24_RXResult pipe = nRF24_ReadPayload(payload, &payload_length);
 
       nRF24_ClearIRQFlags();
-      sprintf(message,"Receiver: packet arrived... \n\r");
+      sprintf(message,"Receiver: packet arrived: %s \n\r", payload);
       HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
     }
+
     //status = nRF24_GetStatus();
     //sprintf(message,"status: %x \n\r", status);
     //HAL_UART_Transmit(&huart2, (uint8_t*) message, 64, 100);
-
 
     xSemaphoreGive(sem_nRF24);
 
